@@ -1,0 +1,17 @@
+spring:
+  config:
+    import: "optional:file:./application-secret.yml"
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/expense_tracker
+    username: expense_user
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+
+  sql:
+    init:
+      mode: always
