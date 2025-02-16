@@ -12,7 +12,11 @@ application-secret.yml
 .settings
 .springBeans
 .sts4-cache
+*.jar
+*.war
 
+~/.m2/
+.idea/
 .idea
 *.iws
 *.iml
