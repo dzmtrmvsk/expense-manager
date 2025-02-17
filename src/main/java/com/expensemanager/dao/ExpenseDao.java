@@ -21,6 +21,15 @@ public class ExpenseDao {
 		return mockExpenses;
 	}
 
+	public Expense findById(Long id) {
+		for (Expense expense : mockExpenses) {
+			if (expense.getId().equals(id)) {
+				return expense;
+			}
+		}
+		return new Expense();
+	}
+
 	public List<Expense> getExpensesByCategory(String category) {
 		List<Expense> filteredExpenses = new ArrayList<>();
 

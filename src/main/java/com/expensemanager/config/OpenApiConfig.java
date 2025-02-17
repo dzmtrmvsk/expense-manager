@@ -15,11 +15,11 @@ public class OpenApiConfig {
 		return new OpenAPI()
 				.info(new Info()
 						.title("Expense Manager API")
-						.description("API для управления расходами")
+						.description("API for managing expenses")
 						.version("1.0")
 						.license(new License().name("Apache 2.0").url("https://springdoc.org")))
 				.externalDocs(new ExternalDocumentation()
-						.description("GitHub репозиторий")
-						.url("https://github.com/your-repo"));
+						.description("GitHub repository")
+						.url("https://github.com/dzmtrmvsk/expense-manager"));
 	}
 }

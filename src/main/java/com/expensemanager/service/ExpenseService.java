@@ -20,6 +20,10 @@ public class ExpenseService {
 		return expenseDao.findAll();
 	}
 
+	public Expense getExpenseById(Long id) {
+		return expenseDao.findById(id);
+	}
+
 	public List<Expense> getExpensesByCategory(String category) {
 		return expenseDao.getExpensesByCategory(category);
 	}
