@@ -1,6 +1,7 @@
 package com.expensemanager.service;
 
 import com.expensemanager.dao.ExpenseDao;
+import com.expensemanager.exception.ResourceNotFoundException;
 import com.expensemanager.model.Expense;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,11 @@ public class ExpenseService {
 	}
 
 	public Expense getExpenseById(Long id) {
-		return expenseDao.findById(id);
+		Expense expense = expenseDao.findById(id);
+		if (expense.getId() == null) {
+			throw new ResourceNotFoundException("Расход с ID " + id + " не найден");
+		}
+		return expense;
 	}
 
 	public List<Expense> getExpensesByCategory(String category) {

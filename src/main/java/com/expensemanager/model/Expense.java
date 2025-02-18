@@ -1,6 +1,7 @@
 package com.expensemanager.model;
 
 public class Expense {
+
 	private Long id;
 	private String name;
 	private String category;
