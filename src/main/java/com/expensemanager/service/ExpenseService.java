@@ -24,12 +24,16 @@ public class ExpenseService {
 	public Expense getExpenseById(Long id) {
 		Expense expense = expenseDao.findById(id);
 		if (expense.getId() == null) {
-			throw new ResourceNotFoundException("Расход с ID " + id + " не найден");
+			throw new ResourceNotFoundException("Expense with ID " + id + " not found");
 		}
 		return expense;
 	}
 
 	public List<Expense> getExpensesByCategory(String category) {
+		List<Expense> expenses = expenseDao.getExpensesByCategory(category);
+		if (expenses.isEmpty()) {
+			throw new ResourceNotFoundException("No expenses found for category " + category);
+		}
 		return expenseDao.getExpensesByCategory(category);
 	}
 }
