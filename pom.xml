@@ -6,11 +6,11 @@
                         https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- Use a recent Spring Boot version that may include patched transitive dependencies -->
+	<!-- Используем стабильную версию Spring Boot -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.4</version>
+		<version>3.0.9</version>
 		<relativePath/>
 	</parent>
 
@@ -22,61 +22,36 @@
 
 	<properties>
 		<java.version>17</java.version>
-		<!-- Secure override versions for transitive dependencies -->
-		<logback.version>1.4.9</logback.version>
-		<snakeyaml.version>1.33.1</snakeyaml.version>
-		<tomcat.version>10.1.12</tomcat.version>
-		<lombok.version>1.18.36</lombok.version>
 	</properties>
 
-	<!-- Override vulnerable transitive dependencies via dependencyManagement -->
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.yaml</groupId>
-				<artifactId>snakeyaml</artifactId>
-				<version>${snakeyaml.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${tomcat.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
-		<!-- Spring Boot Starter Web -->
+		<!-- Web -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- Spring Boot Starter Data JPA -->
+		<!-- Data JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
-		<!-- Spring Boot Starter Validation -->
+		<!-- Validation (Bean Validation: jakarta.validation) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
-		<!-- PostgreSQL Driver -->
+		<!-- PostgreSQL драйвер -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
+			<version>42.7.2</version>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- H2 Database (for tests) -->
+		<!-- H2 (для тестов) -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -90,7 +65,7 @@
 			<version>2.5.0</version>
 		</dependency>
 
-		<!-- Spring Boot DevTools (optional, for development) -->
+		<!-- DevTools (опционально, для разработки) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -98,18 +73,16 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Spring Boot Starter Test -->
+		<!-- Тестирование -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- Lombok (provided scope) -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>${lombok.version}</version>
+			<version>1.18.36</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -127,7 +100,7 @@
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>${lombok.version}</version>
+							<version>1.18.36</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
