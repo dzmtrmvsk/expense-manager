@@ -1,5 +1,6 @@
 package com.expensemanager.service;
 
+import com.expensemanager.cache.ExpenseCache;
 import com.expensemanager.dto.ExpenseDTO;
 import com.expensemanager.dto.ExpenseUpdateDTO;
 import com.expensemanager.exception.ResourceNotFoundException;
@@ -25,6 +26,7 @@ public class ExpenseService {
 	private final CategoryRepository categoryRepository;
 	private final TagRepository tagRepository;
 	private final ExchangeRateService exchangeRateService;
+	private final ExpenseCache expenseCache;
 	private final ExpenseService self;
 
 	private static final String CAT_PR = "Category '";
@@ -34,18 +36,24 @@ public class ExpenseService {
 	                      CategoryRepository categoryRepository,
 	                      TagRepository tagRepository,
 	                      ExchangeRateService exchangeRateService,
+	                      ExpenseCache expenseCache,
 	                      @Lazy ExpenseService self) {
 		this.expenseRepository = expenseRepository;
 		this.categoryRepository = categoryRepository;
 		this.tagRepository = tagRepository;
 		this.exchangeRateService = exchangeRateService;
+		this.expenseCache = expenseCache;
 		this.self = self;
+	}
+
+	private boolean isDTONull(ExpenseDTO expenseDTO) {
+		return expenseDTO.getTags() != null;
 	}
 
 	@Transactional
 	public Expense createExpense(ExpenseDTO expenseDTO) {
 		Category category = categoryRepository.findByNameIgnoreCase(expenseDTO.getCategory())
-				.orElseThrow(() -> new ResourceNotFoundException(CAT_PR + expenseDTO.getCategory() +  CAT_PSF));
+				.orElseThrow(() -> new ResourceNotFoundException(CAT_PR + expenseDTO.getCategory() + CAT_PSF));
 		Expense expense = new Expense();
 		expense.setName(expenseDTO.getName());
 		expense.setAmount(expenseDTO.getAmount());
@@ -54,18 +62,38 @@ public class ExpenseService {
 		if (expenseDTO.getTags() != null && !expenseDTO.getTags().isEmpty()) {
 			expense.getTags().addAll(resolveTags(new ArrayList<>(expenseDTO.getTags())));
 		}
-		return expenseRepository.save(expense);
+		Expense savedExpense = expenseRepository.save(expense);
+		expenseCache.put(savedExpense.getId(), savedExpense);
+		log.info("Expense with id {} created and cached", savedExpense.getId());
+		return savedExpense;
 	}
 
 	@Transactional(readOnly = true)
 	public List<Expense> getAllExpenses() {
-		return expenseRepository.findAllWithAssociations();
+		List<Expense> expenses = expenseRepository.findAllWithAssociations();
+		for (Expense expense : expenses) {
+			if (expenseCache.get(expense.getId()) == null) {
+				expenseCache.put(expense.getId(), expense);
+				log.info("Expense with id {} added to cache from getAllExpenses", expense.getId());
+			} else {
+				log.info("Expense with id {} already present in cache (getAllExpenses)", expense.getId());
+			}
+		}
+		return expenses;
 	}
 
 	@Transactional(readOnly = true)
 	public Expense getExpenseById(Long id) {
-		return expenseRepository.findByIdWithAssociations(id)
+		Expense cachedExpense = expenseCache.get(id);
+		if (cachedExpense != null) {
+			log.info("Expense with id {} retrieved from cache", id);
+			return cachedExpense;
+		}
+		Expense expense = expenseRepository.findByIdWithAssociations(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Expense with ID " + id + " not found"));
+		expenseCache.put(id, expense);
+		log.info("Expense with id {} retrieved from repository and cached", id);
+		return expense;
 	}
 
 	@Transactional
@@ -79,11 +107,14 @@ public class ExpenseService {
 					.orElseThrow(() -> new ResourceNotFoundException(CAT_PR + expenseDTO.getCategory() + CAT_PSF));
 			existingExpense.setCategory(category);
 		}
-		if (expenseDTO.getTags() != null) {
+		if (isDTONull(expenseDTO)) {
 			existingExpense.getTags().clear();
 			existingExpense.getTags().addAll(resolveTags(new ArrayList<>(expenseDTO.getTags())));
 		}
-		return expenseRepository.save(existingExpense);
+		Expense updatedExpense = expenseRepository.save(existingExpense);
+		expenseCache.put(id, updatedExpense);
+		log.info("Expense with id {} updated and cache refreshed in updateExpense", id);
+		return updatedExpense;
 	}
 
 	@Transactional
@@ -100,22 +131,25 @@ public class ExpenseService {
 		}
 		if (isNotBlank(expenseUpdateDTO.getCategory())) {
 			Category category = categoryRepository.findByNameIgnoreCase(expenseUpdateDTO.getCategory())
-					.orElseThrow(() -> new ResourceNotFoundException(CAT_PR
-							+ expenseUpdateDTO.getCategory()
-							+ CAT_PSF));
+					.orElseThrow(() -> new ResourceNotFoundException(CAT_PR + expenseUpdateDTO.getCategory() + CAT_PSF));
 			existingExpense.setCategory(category);
 		}
 		if (expenseUpdateDTO.getTags() != null) {
 			existingExpense.getTags().clear();
 			existingExpense.getTags().addAll(resolveTags(new ArrayList<>(expenseUpdateDTO.getTags())));
 		}
-		return expenseRepository.save(existingExpense);
+		Expense updatedExpense = expenseRepository.save(existingExpense);
+		expenseCache.put(id, updatedExpense);
+		log.info("Expense with id {} partially updated and cache refreshed", id);
+		return updatedExpense;
 	}
 
 	@Transactional
 	public void deleteExpense(Long id) {
 		Expense expense = self.getExpenseById(id);
 		expenseRepository.delete(expense);
+		expenseCache.remove(id);
+		log.info("Expense with id {} deleted and removed from cache", id);
 	}
 
 	@Transactional(readOnly = true)
@@ -123,6 +157,14 @@ public class ExpenseService {
 		List<Expense> expenses = expenseRepository.findByCategoryName(categoryName);
 		if (expenses.isEmpty()) {
 			throw new ResourceNotFoundException("No expenses found for category '" + categoryName + "'");
+		}
+		for (Expense expense : expenses) {
+			if (expenseCache.get(expense.getId()) == null) {
+				expenseCache.put(expense.getId(), expense);
+				log.info("Expense with id {} added to cache from getExpensesByCategory", expense.getId());
+			} else {
+				log.info("Expense with id {} already in cache (getExpensesByCategory)", expense.getId());
+			}
 		}
 		return expenses;
 	}
@@ -133,6 +175,14 @@ public class ExpenseService {
 		if (expenses.isEmpty()) {
 			throw new ResourceNotFoundException("No expenses found in amount range [" + min + ", " + max + "]");
 		}
+		for (Expense expense : expenses) {
+			if (expenseCache.get(expense.getId()) == null) {
+				expenseCache.put(expense.getId(), expense);
+				log.info("Expense with id {} added to cache from getExpensesByAmountRange", expense.getId());
+			} else {
+				log.info("Expense with id {} already in cache (getExpensesByAmountRange)", expense.getId());
+			}
+		}
 		return expenses;
 	}
 
@@ -141,6 +191,14 @@ public class ExpenseService {
 		List<Expense> expenses = expenseRepository.searchByNamePart(namePart);
 		if (expenses.isEmpty()) {
 			throw new ResourceNotFoundException("No expenses found matching name part '" + namePart + "'");
+		}
+		for (Expense expense : expenses) {
+			if (expenseCache.get(expense.getId()) == null) {
+				expenseCache.put(expense.getId(), expense);
+				log.info("Expense with id {} added to cache from searchByNamePart", expense.getId());
+			} else {
+				log.info("Expense with id {} already in cache (searchByNamePart)", expense.getId());
+			}
 		}
 		return expenses;
 	}
@@ -151,6 +209,14 @@ public class ExpenseService {
 		if (expenses.isEmpty()) {
 			throw new ResourceNotFoundException("No expenses found for tag '" + tagName + "'");
 		}
+		for (Expense expense : expenses) {
+			if (expenseCache.get(expense.getId()) == null) {
+				expenseCache.put(expense.getId(), expense);
+				log.info("Expense with id {} added to cache from getExpensesByTag", expense.getId());
+			} else {
+				log.info("Expense with id {} already in cache (getExpensesByTag)", expense.getId());
+			}
+		}
 		return expenses;
 	}
 
@@ -158,6 +224,7 @@ public class ExpenseService {
 	public Double getExpenseAmountInCurrency(Long expenseId, String targetCurrency) {
 		Expense expense = self.getExpenseById(expenseId);
 		double rate = exchangeRateService.getExchangeRate(expense.getCurrency(), targetCurrency);
+		log.info("Converted expense id {} from {} to {} with rate {}", expenseId, expense.getCurrency(), targetCurrency, rate);
 		return expense.getAmount() * rate;
 	}
 
@@ -165,7 +232,12 @@ public class ExpenseService {
 		List<Tag> tags = new ArrayList<>();
 		for (String tagName : tagNames) {
 			Tag tag = tagRepository.findByNameIgnoreCase(tagName)
-					.orElseGet(() -> tagRepository.save(new Tag(tagName)));
+					.orElseGet(() -> {
+						Tag newTag = new Tag(tagName);
+						Tag savedTag = tagRepository.save(newTag);
+						log.info("New tag with name '{}' created and saved", tagName);
+						return savedTag;
+					});
 			tags.add(tag);
 		}
 		return tags;
