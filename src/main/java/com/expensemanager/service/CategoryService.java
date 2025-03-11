@@ -1,6 +1,7 @@
 package com.expensemanager.service;
 
 import com.expensemanager.dto.CategoryDTO;
+import com.expensemanager.exception.CategoryAlreadyExistsException;
 import com.expensemanager.exception.ResourceNotFoundException;
 import com.expensemanager.model.Category;
 import com.expensemanager.repository.CategoryRepository;
@@ -30,6 +31,9 @@ public class CategoryService {
 	}
 
 	public Category createCategory(CategoryDTO categoryDTO) {
+		if (categoryRepository.existsByName(categoryDTO.getName())) {
+			throw new CategoryAlreadyExistsException("Category with name " + categoryDTO.getName() + " already exists");
+		}
 		log.info("Creating category with name={}", categoryDTO.getName());
 		Category category = new Category();
 		category.setName(categoryDTO.getName());

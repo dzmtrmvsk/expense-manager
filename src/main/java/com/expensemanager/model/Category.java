@@ -1,7 +1,6 @@
 package com.expensemanager.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -32,7 +31,7 @@ public class Category {
 	private String name;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
 	private List<Expense> expenses = new ArrayList<>();
 
 	public Category(String name) {

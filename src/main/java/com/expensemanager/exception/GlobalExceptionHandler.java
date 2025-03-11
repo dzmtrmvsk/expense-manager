@@ -18,6 +18,12 @@ public class GlobalExceptionHandler {
 		return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
 	}
 
+	@ExceptionHandler(CategoryAlreadyExistsException.class)
+	public ResponseEntity<ErrorResponse> handleCategoryAlreadyExistsException(CategoryAlreadyExistsException ex) {
+		ErrorResponse errorResponse = new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage());
+		return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+	}
+
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
 		String errorMessage = String.format("Wrong value '%s' for parameter '%s'", ex.getValue(), ex.getName());

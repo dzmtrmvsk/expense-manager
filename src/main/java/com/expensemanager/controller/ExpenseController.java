@@ -1,6 +1,7 @@
 package com.expensemanager.controller;
 
 import com.expensemanager.dto.ExpenseDTO;
+import com.expensemanager.dto.ExpenseUpdateDTO;
 import com.expensemanager.model.Expense;
 import com.expensemanager.service.ExpenseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +11,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -60,12 +62,16 @@ public class ExpenseController {
 		expenseService.deleteExpense(id);
 	}
 
-	// Остальные поисковые эндпоинты оставляем без изменений, так как они логически разделены по функционалу
-
 	@GetMapping("/search/category")
 	@Operation(summary = "Find expenses by category name")
 	public List<Expense> getExpensesByCategory(@RequestParam String category) {
 		return expenseService.getExpensesByCategory(category);
+	}
+
+	@PatchMapping("/{id}")
+	@Operation(summary = "Partially update expense by ID")
+	public Expense patchExpense(@PathVariable("id") Long id, @RequestBody ExpenseUpdateDTO expenseUpdateDTO) {
+		return expenseService.updateExpensePartial(id, expenseUpdateDTO);
 	}
 
 	@GetMapping("/search/amount")

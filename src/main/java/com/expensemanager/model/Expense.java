@@ -1,6 +1,8 @@
 package com.expensemanager.model;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +27,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "expenses")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Expense {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,7 +53,6 @@ public class Expense {
 			joinColumns = @JoinColumn(name = "expense_id"),
 			inverseJoinColumns = @JoinColumn(name = "tag_id")
 	)
-	@JsonIgnoreProperties({"expenses", "hibernateLazyInitializer", "handler"})
 	private Set<Tag> tags = new HashSet<>();
 
 	public Expense(String name, Category category, Double amount, String currency) {
