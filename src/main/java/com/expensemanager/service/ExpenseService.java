@@ -131,7 +131,9 @@ public class ExpenseService {
 		}
 		if (isNotBlank(expenseUpdateDTO.getCategory())) {
 			Category category = categoryRepository.findByNameIgnoreCase(expenseUpdateDTO.getCategory())
-					.orElseThrow(() -> new ResourceNotFoundException(CAT_PR + expenseUpdateDTO.getCategory() + CAT_PSF));
+					.orElseThrow(() -> new ResourceNotFoundException(CAT_PR
+							+ expenseUpdateDTO.getCategory()
+							+ CAT_PSF));
 			existingExpense.setCategory(category);
 		}
 		if (expenseUpdateDTO.getTags() != null) {
