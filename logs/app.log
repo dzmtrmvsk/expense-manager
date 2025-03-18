@@ -1,8 +1,0 @@
-2025-03-18 12:26:59.855 [http-nio-8080-exec-1] INFO  c.e.aspect.LoggingAspect - Entering: ExpenseController.getExpenseById(..) with arguments = [5]
-2025-03-18 12:26:59.868 [http-nio-8080-exec-1] INFO  c.e.aspect.LoggingAspect - Entering: ExpenseService.getExpenseById(..) with arguments = [5]
-2025-03-18 12:27:00.038 [http-nio-8080-exec-1] ERROR c.e.aspect.LoggingAspect - Exception in ExpenseService.getExpenseById(..) with arguments [5]: Expense with ID 5 not foundcom.expensemanager.exception.ResourceNotFoundException: Expense with ID 5 not found
-	at com.expensemanager.service.ExpenseService.lambda$getExpenseById$1(ExpenseService.java:93)
-
-2025-03-18 12:27:00.045 [http-nio-8080-exec-1] ERROR c.e.aspect.LoggingAspect - Exception in ExpenseController.getExpenseById(..) with arguments [5]: Expense with ID 5 not foundcom.expensemanager.exception.ResourceNotFoundException: Expense with ID 5 not found
-	at com.expensemanager.service.ExpenseService.lambda$getExpenseById$1(ExpenseService.java:93)
-
