@@ -1,0 +1,48 @@
+<configuration>
+    <!-- Аппендер для консоли -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%ex{short}%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Аппендер для файла -->
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>logs/app.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%ex{short}%n</pattern>
+        </encoder>
+        <!-- Фильтр, разрешающий:
+             - все сообщения уровня ERROR и выше,
+             - INFO-сообщения от логгеров, начинающихся с нужных префиксов -->
+        <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+            <evaluator class="ch.qos.logback.classic.boolex.JaninoEventEvaluator">
+                <expression>
+                    return (event.getLevel().toInt() >= ch.qos.logback.classic.Level.ERROR_INT)
+                    || (event.getLevel().toInt() == ch.qos.logback.classic.Level.INFO_INT
+                    &amp;&amp; (event.getLoggerName().startsWith("com.expensemanager.service")
+                    || event.getLoggerName().startsWith("c.e.service")
+                    || event.getLoggerName().startsWith("c.e.aspect")
+                    || event.getLoggerName().startsWith("com.expensemanager.aspect")));
+                </expression>
+
+            </evaluator>
+            <OnMismatch>DENY</OnMismatch>
+            <OnMatch>ACCEPT</OnMatch>
+        </filter>
+    </appender>
+
+    <!-- Логгер для аспектов с отключённой наследуемостью -->
+    <!-- Привязываем FILE, чтобы сообщения LoggingAspect попадали в файл -->
+    <logger name="c.e.aspect" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <!-- Корневой логгер для остальных логов -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

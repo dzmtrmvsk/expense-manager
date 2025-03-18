@@ -93,6 +93,12 @@
 			<artifactId>postgresql</artifactId>
 			<!-- Removing the runtime scope ensures the driver is visible to DevTools’ restart class loader -->
 		</dependency>
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+			<version>3.1.6</version>
+		</dependency>
+
 
 		<!-- H2 Database for tests -->
 		<dependency>
