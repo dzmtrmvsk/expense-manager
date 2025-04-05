@@ -52,20 +52,11 @@ public class ExpenseService {
 
 	@Transactional
 	public Expense createExpense(ExpenseDTO expenseDTO) {
-		Category category = categoryRepository.findByNameIgnoreCase(expenseDTO.getCategory())
-				.orElseThrow(() -> new ResourceNotFoundException(CAT_PR + expenseDTO.getCategory() + CAT_PSF));
-		Expense expense = new Expense();
-		expense.setName(expenseDTO.getName());
-		expense.setAmount(expenseDTO.getAmount());
-		expense.setCurrency(expenseDTO.getCurrency());
-		expense.setCategory(category);
-		if (expenseDTO.getTags() != null && !expenseDTO.getTags().isEmpty()) {
-			expense.getTags().addAll(resolveTags(new ArrayList<>(expenseDTO.getTags())));
-		}
-		Expense savedExpense = expenseRepository.save(expense);
-		expenseCache.put(savedExpense.getId(), savedExpense);
-		log.info("Expense with id {} created and cached", savedExpense.getId());
-		return savedExpense;
+		Expense expense = buildExpenseFromDTO(expenseDTO);
+		Expense saved = expenseRepository.save(expense);
+		expenseCache.put(saved.getId(), saved);
+		log.info("Expense with id {} created and cached", saved.getId());
+		return saved;
 	}
 
 	@Transactional(readOnly = true)
@@ -247,5 +238,39 @@ public class ExpenseService {
 
 	private boolean isNotBlank(String value) {
 		return value != null && !value.isBlank();
+	}
+
+	@Transactional
+	public List<Expense> createExpensesBulk(List<ExpenseDTO> expenseDTOs) {
+		List<Expense> expenses = expenseDTOs.stream()
+				.map(this::buildExpenseFromDTO)
+				.toList();
+
+		List<Expense> savedExpenses = expenseRepository.saveAll(expenses);
+
+		savedExpenses.forEach(exp -> {
+			expenseCache.put(exp.getId(), exp);
+			log.info("Expense with id {} created in bulk and cached", exp.getId());
+		});
+
+		return savedExpenses;
+	}
+
+	private Expense buildExpenseFromDTO(ExpenseDTO dto) {
+		Category category = categoryRepository
+				.findByNameIgnoreCase(dto.getCategory())
+				.orElseThrow(() -> new ResourceNotFoundException(
+						CAT_PR + dto.getCategory() + CAT_PSF));
+
+		Expense e = new Expense();
+		e.setName(dto.getName());
+		e.setAmount(dto.getAmount());
+		e.setCurrency(dto.getCurrency());
+		e.setCategory(category);
+
+		if (dto.getTags() != null && !dto.getTags().isEmpty()) {
+			e.getTags().addAll(resolveTags(new ArrayList<>(dto.getTags())));
+		}
+		return e;
 	}
 }

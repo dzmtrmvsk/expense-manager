@@ -97,4 +97,10 @@ public class ExpenseController {
 	public Double getExpenseConverted(@PathVariable("id") Long id, @RequestParam String currency) {
 		return expenseService.getExpenseAmountInCurrency(id, currency);
 	}
+
+	@PostMapping("/bulk")
+	@Operation(summary = "Create multiple expenses in bulk")
+	public List<Expense> createExpensesBulk(@Valid @RequestBody List<ExpenseDTO> expenseDTOs) {
+		return expenseService.createExpensesBulk(expenseDTOs);
+	}
 }

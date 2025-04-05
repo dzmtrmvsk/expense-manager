@@ -21,7 +21,7 @@
 	<description>Expense Manager Backend</description>
 
 	<properties>
-		<java.version>17</java.version>
+		<java.version>21</java.version>
 		<!-- Secure override versions for transitive dependencies -->
 		<logback.version>1.4.9</logback.version>
 		<snakeyaml.version>1.33</snakeyaml.version>
@@ -181,6 +181,36 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<argLine>${argLine} -Dnet.bytebuddy.experimental=true</argLine>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
