@@ -130,7 +130,6 @@ class ExpenseServiceTest {
 		savedExpense.setAmount(15.0);
 		savedExpense.setCurrency("EUR");
 		savedExpense.setCategory(cat);
-		// Предполагаем, что после разрешения тегов добавляются два тега
 		Tag t1 = new Tag("fast");
 		t1.setId(1L);
 		Tag t2 = new Tag("cheap");
@@ -156,7 +155,6 @@ class ExpenseServiceTest {
 		e2.setId(2L);
 		List<Expense> list = List.of(e1, e2);
 		when(expenseRepository.findAllWithAssociations()).thenReturn(list);
-		// Для первого возвращаем null (cache miss), для второго – уже есть в кеше
 		when(expenseCache.get(1L)).thenReturn(null);
 		when(expenseCache.get(2L)).thenReturn(e2);
 
