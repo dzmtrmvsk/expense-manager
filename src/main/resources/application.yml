@@ -1,16 +1,17 @@
 spring:
-  config:
-    import: "optional:file:./application-secret.yml"
-
   datasource:
-    url: jdbc:postgresql://localhost:5432/expense_tracker
-    username: expense_user
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     open-in-view: false
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: ${SPRING_JPA_HIBERNATE_DIALECT}
 
   sql:
     init:
